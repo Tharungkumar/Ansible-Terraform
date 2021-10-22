@@ -1,0 +1,36 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+    - name: update
+      apt: update_cache=yes   
+  
+    - name: copying html files
+      copy:
+        src: /home/tharung/Downloads/index.html
+        dest: /var/www/html/
+
+    - name: copying configuration files
+      template: 
+        src: /home/tharung/tdash
+        dest: /etc/nginx/sites-available/tdash
+       
+    - name: Pointing symlink
+      file:
+        src: /etc/nginx/sites-available/tdash
+        dest: /etc/nginx/sites-enabled/tdash
+        state: link
+      notify: Restart Nginx
+
+    - name: Allow all access to tcp port
+      ufw:
+       rule: allow
+       port: '80'
+       proto: tcp
+
+  handlers:
+    - name: restart nginx
+      service: 
+        name: nginx 
+        state: reloaded    
